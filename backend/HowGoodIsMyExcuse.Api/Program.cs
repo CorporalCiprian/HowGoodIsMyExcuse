@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using HowGoodIsMyExcuse.Api.Services;
+using HowGoodIsMyExcuse.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +45,9 @@ builder.Services.AddCors(options =>
 // HttpClient factory
 builder.Services.AddHttpClient();
 
+builder.Services.AddScoped<IClaudeService, ClaudeService>();
+builder.Services.AddScoped<IExcuseService, ExcuseService>();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -60,6 +65,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<RateLimitMiddleware>();
 app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
