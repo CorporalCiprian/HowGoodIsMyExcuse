@@ -1,0 +1,41 @@
+# Build outputs
+bin/
+obj/
+
+# Secrets — never commit these
+appsettings.Development.json
+appsettings.Production.json
+*.pfx
+*.key
+
+# EF Core migrations are intentionally tracked, so Data/Migrations/ is NOT ignored
+
+# Rider
+.idea/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# NuGet
+*.nupkg
+*.snupkg
+project.lock.json
+packages/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Docker
+.dockerignore
