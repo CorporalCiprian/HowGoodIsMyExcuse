@@ -45,12 +45,38 @@ builder.Services.AddCors(options =>
 // HttpClient factory
 builder.Services.AddHttpClient();
 
-builder.Services.AddScoped<IClaudeService, ClaudeService>();
+builder.Services.AddScoped<IGroqService, GroqService>();
 builder.Services.AddScoped<IExcuseService, ExcuseService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Please fill in the Bearer token:{token}"
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 var app = builder.Build();
 
@@ -59,7 +85,23 @@ if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    var retries = 5;
+    while (retries > 0)
+    {
+        try
+        {
+            await db.Database.MigrateAsync();
+            break;
+        }
+        catch (Exception ex)
+        {
+            retries--;
+            logger.LogWarning("DB not ready, retrying... ({Retries} left). Error: {Message}", retries, ex.Message);
+            await Task.Delay(3000);
+        }
+    }
 
     app.UseSwagger();
     app.UseSwaggerUI();

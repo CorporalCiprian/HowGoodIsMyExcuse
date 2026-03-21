@@ -30,7 +30,7 @@ public class ExcuseController : ControllerBase
             var result = await _excuseService.SubmitExcuse(request, userId.Value);
             return CreatedAtAction(nameof(GetExcuseById), new { id = result.Id }, result);
         }
-        catch (ClaudeServiceException ex)
+        catch (GroqServiceException ex)
         {
             return StatusCode(502, new { error = ex.Message });
         }

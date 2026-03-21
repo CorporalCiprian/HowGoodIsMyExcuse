@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16
+    container_name: howgoodismyexcuse-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: YOUR_PASSWORD_HERE
+      POSTGRES_DB: howgoodismyexcuse
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./backend/HowGoodIsMyExcuse.Api
+      dockerfile: Dockerfile
+    container_name: howgoodismyexcuse-api
+    ports:
+      - "8080:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=howgoodismyexcuse;Username=postgres;Password=YOUR_PASSWORD_HERE
+      - Groq__ApiKey=YOUR_API_KEY_HERE
+      - Jwt__Secret=YOUR_JWT_SECRET_MIN_32_CHARS_HERE
+      - AllowedOrigins=http://localhost:4200
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - db
+
+volumes:
+  pgdata:

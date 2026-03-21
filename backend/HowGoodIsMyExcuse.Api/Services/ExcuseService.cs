@@ -8,17 +8,17 @@ namespace HowGoodIsMyExcuse.Api.Services;
 public class ExcuseService : IExcuseService
 {
     private readonly AppDbContext _db;
-    private readonly IClaudeService _claudeService;
+    private readonly IGroqService _groqService;
 
-    public ExcuseService(AppDbContext db, IClaudeService claudeService)
-    {
-        _db = db;
-        _claudeService = claudeService;
-    }
+public ExcuseService(AppDbContext db, IGroqService groqService)
+{
+    _db = db;
+    _groqService = groqService;
+}
 
     public async Task<ExcuseResponse> SubmitExcuse(SubmitExcuseRequest request, Guid userId)
     {
-        var judgeResult = await _claudeService.EvaluateExcuse(request.Text, request.JudgePersonality);
+        var judgeResult = await _groqService.EvaluateExcuse(request.Text, request.JudgePersonality);
 
         var excuse = new Excuse
         {
