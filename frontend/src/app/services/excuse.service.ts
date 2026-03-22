@@ -25,7 +25,7 @@ export interface ExcuseResponse {
   providedIn: 'root'
 })
 export class ExcuseService {
-  private apiUrl = 'http://localhost:5000/api/excuses';
+  private apiUrl = '/api/excuses';
 
   constructor(private http: HttpClient) {}
 

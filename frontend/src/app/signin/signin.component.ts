@@ -26,7 +26,7 @@ export class SigninComponent {
   onPasswordChange(value: string) { this.password.set(value); }
   togglePasswordVisibility() { this.showPassword.update((v) => !v); }
 
-  async onSubmit() {
+  onSubmit() {
     if (!this.email() || !this.password()) {
       this.errorMessage.set('All parameters are required to proceed.');
       return;
@@ -35,13 +35,14 @@ export class SigninComponent {
     this.errorMessage.set('');
     this.isLoading.set(true);
 
-    try {
-      await this.authService.login(this.email(), this.password()).toPromise();
-      // Navigate to dashboard after successful login
-      this.router.navigate(['/dashboard']);
-    } catch (error) {
-      this.errorMessage.set(error instanceof Error ? error.message : 'Login failed. Please try again.');
-      this.isLoading.set(false);
-    }
+    this.authService.login(this.email(), this.password()).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        this.errorMessage.set(error instanceof Error ? error.message : 'Login failed. Please try again.');
+        this.isLoading.set(false);
+      }
+    });
   }
 }

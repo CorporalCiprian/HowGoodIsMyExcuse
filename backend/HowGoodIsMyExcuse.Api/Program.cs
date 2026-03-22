@@ -35,8 +35,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngular", policy =>
     {
         policy.WithOrigins(
+                "http://localhost",
                 "http://localhost:4200",
-                builder.Configuration["AllowedOrigins"] ?? "http://localhost:4200")
+                "http://frontend",
+                builder.Configuration["AllowedOrigins"] ?? "http://localhost")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -80,10 +82,9 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// Auto-migrate in development
-if (app.Environment.IsDevelopment())
+// Auto-migrate database (run in all environments)
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
@@ -93,6 +94,7 @@ if (app.Environment.IsDevelopment())
         try
         {
             await db.Database.MigrateAsync();
+            logger.LogInformation("Database migrations applied successfully");
             break;
         }
         catch (Exception ex)
@@ -102,7 +104,11 @@ if (app.Environment.IsDevelopment())
             await Task.Delay(3000);
         }
     }
+}
 
+// Swagger only in development
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
 }

@@ -24,7 +24,7 @@ export interface RegisterRequest {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:5000/api/auth';
+  private apiUrl = '/api/auth';
   private tokenKey = 'excuse_token';
   private userKey = 'excuse_user';
 

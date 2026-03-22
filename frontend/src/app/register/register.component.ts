@@ -28,7 +28,7 @@ export class RegisterComponent {
   onPasswordChange(value: string) { this.password.set(value); }
   togglePasswordVisibility() { this.showPassword.update((v) => !v); }
 
-  async onSubmit() {
+  onSubmit() {
     const username = this.username().trim();
     const email = this.email().trim();
     const password = this.password();
@@ -52,13 +52,14 @@ export class RegisterComponent {
     this.errorMessage.set('');
     this.isLoading.set(true);
 
-    try {
-      await this.authService.register(username, email, password);
-      // Navigate to dashboard after successful registration
-      this.router.navigate(['/dashboard']);
-    } catch (error) {
-      this.errorMessage.set(error instanceof Error ? error.message : 'Registration failed. Please try again.');
-      this.isLoading.set(false);
-    }
+    this.authService.register(username, email, password).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        this.errorMessage.set(error instanceof Error ? error.message : 'Registration failed. Please try again.');
+        this.isLoading.set(false);
+      }
+    });
   }
 }
