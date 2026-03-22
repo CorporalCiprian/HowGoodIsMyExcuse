@@ -52,6 +52,17 @@ export class ExcuseService {
     );
   }
 
+  getMyExcuses(page: number = 1, pageSize: number = 10): Observable<ExcuseResponse[]> {
+    return this.http.get<ExcuseResponse[]>(`${this.apiUrl}/my`, {
+      params: { page: page.toString(), pageSize: pageSize.toString() }
+    }).pipe(
+      catchError(error => {
+        const errorMessage = error.error?.error || 'Failed to load your excuses.';
+        return throwError(() => new Error(errorMessage));
+      })
+    );
+  }
+
   getExcuseById(id: string): Observable<ExcuseResponse> {
     return this.http.get<ExcuseResponse>(`${this.apiUrl}/${id}`).pipe(
       catchError(error => {

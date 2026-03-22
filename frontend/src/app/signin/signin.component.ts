@@ -8,8 +8,7 @@ import { AuthService } from '../services/auth.service';
   selector: 'app-signin',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './signin.component.html',
-  // No styleUrls needed — Tailwind handles everything
+  templateUrl: './signin.component.html'
 })
 export class SigninComponent {
   email = signal('');

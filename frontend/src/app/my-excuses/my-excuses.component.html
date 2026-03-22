@@ -1,0 +1,132 @@
+<div class="min-h-screen bg-surface text-on-surface">
+  <!-- Back button & header -->
+  <div class="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/10">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <button 
+        (click)="goBack()"
+        class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface transition"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back
+      </button>
+      <h1 class="text-2xl font-bold">My Excuses</h1>
+      <button
+        (click)="goToSubmit()"
+        class="px-4 py-2 bg-primary text-on-primary text-sm font-bold rounded-lg hover:opacity-90 transition"
+      >
+        + New Excuse
+      </button>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="pt-24 pb-12 px-6">
+    <div class="max-w-6xl mx-auto">
+
+      <!-- Loading state -->
+      <div *ngIf="isLoading()" class="flex justify-center items-center py-12">
+        <div class="flex flex-col items-center gap-4">
+          <div class="w-8 h-8 rounded-full border-4 border-primary/30 border-t-primary animate-spin"></div>
+          <p class="text-on-surface-variant">Loading your excuses...</p>
+        </div>
+      </div>
+
+      <!-- Error state -->
+      <div *ngIf="errorMessage()" class="flex items-start gap-3 p-4 rounded-lg bg-tertiary/10 border border-tertiary/30 mb-6">
+        <svg class="w-5 h-5 text-tertiary shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+        </svg>
+        <span class="text-sm text-tertiary">{{ errorMessage() }}</span>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!isLoading() && excuses().length === 0 && !errorMessage()" class="py-16 text-center">
+        <svg class="w-16 h-16 mx-auto text-on-surface-variant/30 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h2 class="text-xl font-bold text-on-surface mb-2">No excuses yet</h2>
+        <p class="text-on-surface-variant mb-6">You haven't submitted any excuses. Let's change that!</p>
+        <button
+          (click)="goToSubmit()"
+          class="px-6 py-3 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition"
+        >
+          Create Your First Excuse
+        </button>
+      </div>
+
+      <!-- Excuses grid -->
+      <div *ngIf="!isLoading() && excuses().length > 0" class="space-y-4">
+        <div *ngFor="let excuse of excuses()" class="group relative glass-card p-6 rounded-xl border border-outline-variant/10 hover:border-primary/30 transition">
+          
+          <!-- Header -->
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <span class="text-lg font-bold text-primary">{{ excuse.score }}</span>
+                </div>
+                <div>
+                  <p class="text-sm text-on-surface-variant font-bold uppercase tracking-widest">Score</p>
+                  <p class="text-xs text-on-surface-variant capitalize">{{ excuse.judgePersonality }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-on-surface-variant mb-1">{{ formatDate(excuse.createdAt) }}</p>
+              <span class="inline-flex items-center gap-1 text-xs font-bold text-secondary">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 10.5a1.5 1.5 0 113 0v-6a1.5 1.5 0 01-3 0v6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.519-7.594A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
+                </svg>
+                {{ excuse.votes }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Excuse text -->
+          <p class="text-on-surface leading-relaxed mb-4 italic">{{ excuse.text }}</p>
+
+          <!-- Verdict & Roast -->
+          <div class="space-y-3 pt-4 border-t border-outline-variant/10">
+            <div>
+              <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Verdict</p>
+              <p class="text-sm text-on-surface-variant">{{ excuse.verdict }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Roast</p>
+              <p class="text-sm text-on-surface-variant">{{ excuse.roast }}</p>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="mt-4 flex gap-2">
+            <button
+              (click)="viewDetails(excuse.id)"
+              class="flex-1 py-2 px-3 bg-surface-container-high text-on-surface text-sm font-bold rounded-lg hover:bg-surface-container transition border border-outline-variant"
+            >
+              View Details
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination (if needed) -->
+      <div *ngIf="canLoadMore()" class="mt-8 text-center">
+        <button
+          (click)="loadMore()"
+          class="px-6 py-3 bg-surface-container-high text-on-surface font-bold rounded-lg hover:bg-surface-container transition border border-outline-variant"
+        >
+          Load More
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .glass-card {
+    background: rgba(42, 42, 42, 0.4);
+    backdrop-filter: blur(12px);
+  }
+</style>
