@@ -22,12 +22,26 @@ appsettings.Production.json
 
 # Visual Studio Code
 .vscode/
+!.vscode/extensions.json
 
 # NuGet
 *.nupkg
 *.snupkg
 project.lock.json
 packages/
+
+# Node / Angular / Frontend
+node_modules/
+npm-debug.log
+yarn-error.log
+/dist
+/tmp
+/out-tsc
+/.angular/cache
+.sass-cache/
+/coverage
+testem.log
+/typings
 
 # OS
 .DS_Store
@@ -40,5 +54,5 @@ logs/
 # Docker
 .dockerignore
 
-#Docker secrets
+# Docker secrets
 docker-compose.yml
