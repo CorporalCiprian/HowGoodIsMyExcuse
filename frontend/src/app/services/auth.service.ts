@@ -79,7 +79,9 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    const token = localStorage.getItem(this.tokenKey);
+    console.log('AuthService.getToken() -', token ? 'Token found' : 'No token');
+    return token;
   }
 
   private hasToken(): boolean {

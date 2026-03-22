@@ -1,0 +1,100 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+
+@Component({
+  selector: 'app-dashboard',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="min-h-screen bg-surface text-on-surface p-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-12">
+          <h1 class="text-4xl font-bold">Welcome, {{ user()?.username }}!</h1>
+          <button 
+            (click)="logout()"
+            class="px-6 py-2 bg-tertiary text-on-tertiary rounded-lg font-bold hover:opacity-90 transition"
+          >
+            Logout
+          </button>
+        </div>
+        
+        <!-- Cards with navigation -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Wall of Fame -->
+          <button
+            (click)="navigate('/wall-of-fame')"
+            class="glass-card p-6 rounded-xl border border-outline-variant/10 hover:border-secondary/30 transition group text-left"
+          >
+            <div class="flex items-start justify-between mb-4">
+              <h2 class="text-xl font-bold group-hover:text-secondary transition">Wall of Fame</h2>
+              <svg class="w-5 h-5 text-secondary opacity-0 group-hover:opacity-100 transition" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z"></path>
+              </svg>
+            </div>
+            <p class="text-on-surface-variant text-sm">Browse the best excuses judged by our AI</p>
+          </button>
+
+          <!-- My Excuses -->
+          <button
+            (click)="navigate('/my-excuses')"
+            class="glass-card p-6 rounded-xl border border-outline-variant/10 hover:border-primary/30 transition group text-left"
+          >
+            <div class="flex items-start justify-between mb-4">
+              <h2 class="text-xl font-bold group-hover:text-primary transition">My Excuses</h2>
+              <svg class="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5z"></path>
+              </svg>
+            </div>
+            <p class="text-on-surface-variant text-sm">View and manage your submitted excuses</p>
+          </button>
+
+          <!-- Submit New -->
+          <button
+            (click)="navigate('/submit-excuse')"
+            class="glass-card p-6 rounded-xl border border-outline-variant/10 hover:border-tertiary/30 transition group text-left bg-gradient-to-br from-primary/10 to-transparent"
+          >
+            <div class="flex items-start justify-between mb-4">
+              <h2 class="text-xl font-bold group-hover:text-tertiary transition">Submit New</h2>
+              <svg class="w-5 h-5 text-tertiary opacity-0 group-hover:opacity-100 transition" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <p class="text-on-surface-variant text-sm">Create a new excuse and get judged</p>
+          </button>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .glass-card {
+      background: rgba(42, 42, 42, 0.4);
+      backdrop-filter: blur(12px);
+    }
+  `]
+})
+export class DashboardComponent implements OnInit {
+  user = () => this.authService.getUser();
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    // Redirect to login if not authenticated
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  navigate(path: string) {
+    this.router.navigate([path]);
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+}

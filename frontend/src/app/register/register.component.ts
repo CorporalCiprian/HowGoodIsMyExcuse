@@ -53,7 +53,7 @@ export class RegisterComponent {
     this.isLoading.set(true);
 
     try {
-      await this.authService.register(username, email, password).toPromise();
+      await this.authService.register(username, email, password);
       // Navigate to dashboard after successful registration
       this.router.navigate(['/dashboard']);
     } catch (error) {

@@ -1,0 +1,239 @@
+import { Component, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ExcuseService, ExcuseResponse } from '../services/excuse.service';
+
+@Component({
+  selector: 'app-submit-excuse',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="min-h-screen bg-surface text-on-surface">
+      <!-- Back button & header -->
+      <div class="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/10">
+        <div class="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
+          <button 
+            (click)="goBack()"
+            class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface transition"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back
+          </button>
+          <h1 class="text-xl font-bold">Submit Your Excuse</h1>
+          <div class="w-12"></div>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div class="pt-24 pb-12 px-6">
+        <div class="max-w-2xl mx-auto">
+          
+          <!-- Success state -->
+          <div *ngIf="result()" class="space-y-8">
+            <div class="p-8 rounded-xl bg-surface-container-high border-l-4 border-secondary">
+              <div class="flex items-start gap-4">
+                <svg class="w-6 h-6 text-secondary shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="flex-1">
+                  <h2 class="text-2xl font-bold mb-2">Your Excuse Has Been Judged!</h2>
+                  <p class="text-on-surface-variant mb-6">Here's what our AI judge thinks...</p>
+                  
+                  <!-- Judge result -->
+                  <div class="space-y-6 mt-6">
+                    <!-- Score -->
+                    <div class="flex items-center justify-between p-4 bg-surface-container rounded-lg">
+                      <span class="text-on-surface-variant font-medium">Credibility Score</span>
+                      <span class="text-4xl font-bold text-secondary">{{ result()!.score }}/100</span>
+                    </div>
+
+                    <!-- Verdict -->
+                    <div>
+                      <p class="text-sm text-on-surface-variant font-bold mb-2 uppercase tracking-widest">Verdict</p>
+                      <p class="text-lg text-on-surface italic">{{ result()!.verdict }}</p>
+                    </div>
+
+                    <!-- Roast -->
+                    <div>
+                      <p class="text-sm text-on-surface-variant font-bold mb-2 uppercase tracking-widest">The Roast</p>
+                      <p class="text-base text-on-surface leading-relaxed">{{ result()!.roast }}</p>
+                    </div>
+
+                    <!-- Judge personality -->
+                    <div class="flex items-center justify-between p-3 bg-primary/10 rounded-lg border border-primary/20">
+                      <span class="text-sm text-on-surface-variant">Judge Personality</span>
+                      <span class="text-primary font-semibold capitalize">{{ result()!.judgePersonality }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex gap-4">
+              <button 
+                (click)="resetForm()"
+                class="flex-1 py-3 px-6 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition"
+              >
+                Submit Another
+              </button>
+              <button 
+                (click)="goToLeaderboard()"
+                class="flex-1 py-3 px-6 bg-surface-container-high text-on-surface font-bold rounded-lg hover:bg-surface-container transition border border-outline-variant"
+              >
+                View Leaderboard
+              </button>
+            </div>
+          </div>
+
+          <!-- Form -->
+          <form *ngIf="!result()" (ngSubmit)="onSubmit()" class="space-y-6">
+            <!-- Excuse text -->
+            <div>
+              <label class="block text-sm font-bold tracking-widest uppercase text-on-surface-variant mb-3">
+                Your Excuse
+              </label>
+              <textarea
+                [(ngModel)]="excuseText"
+                name="excuseText"
+                placeholder="Tell us your excuse... (10-500 characters)"
+                maxlength="500"
+                class="w-full h-32 px-4 py-3 rounded-lg bg-surface-container-highest border border-outline-variant text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition resize-none"
+              ></textarea>
+              <div class="flex justify-between mt-2">
+                <span class="text-xs text-on-surface-variant">{{ excuseText().length }} / 500</span>
+                <span *ngIf="excuseText().length < 10" class="text-xs text-tertiary">
+                  Minimum 10 characters
+                </span>
+              </div>
+            </div>
+
+            <!-- Judge personality -->
+            <div>
+              <label class="block text-sm font-bold tracking-widest uppercase text-on-surface-variant mb-3">
+                Judge Personality
+              </label>
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <button
+                  *ngFor="let personality of presetPersonalities"
+                  type="button"
+                  (click)="setPersonality(personality)"
+                  [class.ring-2]="judgePersonality() === personality"
+                  [class.ring-primary]="judgePersonality() === personality"
+                  [class.bg-primary/10]="judgePersonality() === personality"
+                  class="px-4 py-3 rounded-lg bg-surface-container-highest border border-outline-variant text-on-surface text-sm font-medium hover:border-primary transition capitalize"
+                >
+                  {{ personality }}
+                </button>
+              </div>
+              <input
+                type="text"
+                [(ngModel)]="customPersonality"
+                name="customPersonality"
+                placeholder="Or type a custom personality..."
+                class="w-full px-4 py-3 rounded-lg bg-surface-container-highest border border-outline-variant text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition text-sm"
+              />
+              <p class="text-xs text-on-surface-variant mt-2">
+                Examples: sarcastic lawyer, disappointed parent, strict teacher, cynical boss
+              </p>
+            </div>
+
+            <!-- Error message -->
+            <div *ngIf="errorMessage()" class="flex items-start gap-3 p-4 rounded-lg bg-tertiary/10 border border-tertiary/30">
+              <svg class="w-5 h-5 text-tertiary shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+              </svg>
+              <span class="text-sm text-tertiary">{{ errorMessage() }}</span>
+            </div>
+
+            <!-- Submit button -->
+            <button
+              type="submit"
+              [disabled]="isLoading() || excuseText().length < 10"
+              class="w-full py-4 px-6 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <span *ngIf="!isLoading()">Submit for Judgment</span>
+              <span *ngIf="isLoading()" class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded-full border-2 border-on-primary/30 border-t-on-primary animate-spin"></span>
+                Judging...
+              </span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  `
+})
+export class SubmitExcuseComponent {
+  excuseText = signal('');
+  judgePersonality = signal('');
+  customPersonality = signal('');
+  isLoading = signal(false);
+  errorMessage = signal('');
+  result = signal<ExcuseResponse | null>(null);
+
+  presetPersonalities = [
+    'sarcastic lawyer',
+    'disappointed parent',
+    'strict teacher',
+    'cynical boss',
+    'tough coach',
+    'supportive therapist'
+  ];
+
+  constructor(
+    private excuseService: ExcuseService,
+    private router: Router
+  ) {}
+
+  setPersonality(personality: string) {
+    this.judgePersonality.set(personality);
+    this.customPersonality.set('');
+  }
+
+  onSubmit() {
+    if (this.excuseText().length < 10) {
+      this.errorMessage.set('Excuse must be at least 10 characters.');
+      return;
+    }
+
+    const personality = this.customPersonality() || this.judgePersonality();
+    if (!personality) {
+      this.errorMessage.set('Please select or enter a judge personality.');
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.isLoading.set(true);
+
+    this.excuseService.submitExcuse(this.excuseText(), personality).subscribe({
+      next: (response) => {
+        this.result.set(response);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        this.errorMessage.set(error instanceof Error ? error.message : 'Failed to submit excuse.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  resetForm() {
+    this.excuseText.set('');
+    this.judgePersonality.set('');
+    this.customPersonality.set('');
+    this.result.set(null);
+    this.errorMessage.set('');
+  }
+
+  goBack() {
+    this.router.navigate(['/dashboard']);
+  }
+
+  goToLeaderboard() {
+    this.router.navigate(['/wall-of-fame']);
+  }
+}
