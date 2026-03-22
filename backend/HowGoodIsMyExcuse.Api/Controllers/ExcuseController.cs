@@ -47,6 +47,21 @@ public class ExcuseController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("my")]
+    [Authorize]
+    public async Task<IActionResult> GetMyExcuses(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null)
+            return Unauthorized(new { error = "Invalid token." });
+
+        pageSize = Math.Min(pageSize, 50);
+        var result = await _excuseService.GetUserExcuses(userId.Value, page, pageSize);
+        return Ok(result);
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetExcuseById(Guid id)
     {

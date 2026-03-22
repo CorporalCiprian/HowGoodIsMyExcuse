@@ -63,6 +63,26 @@ public ExcuseService(AppDbContext db, IGroqService groqService)
         return result;
     }
 
+    public async Task<List<ExcuseResponse>> GetUserExcuses(Guid userId, int page = 1, int pageSize = 10)
+    {
+        var excuses = await _db.Excuses
+            .Include(e => e.User)
+            .Where(e => e.UserId == userId)
+            .OrderByDescending(e => e.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var result = new List<ExcuseResponse>();
+
+        foreach (var excuse in excuses)
+        {
+            result.Add(MapToResponse(excuse, excuse.User.Username, false));
+        }
+
+        return result;
+    }
+
     public async Task<ExcuseResponse> GetExcuseById(Guid id, Guid? currentUserId)
     {
         var excuse = await _db.Excuses
