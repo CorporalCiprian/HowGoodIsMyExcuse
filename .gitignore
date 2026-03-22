@@ -57,5 +57,4 @@ logs/
 # Docker
 .dockerignore
 
-# Docker secrets
-docker-compose.yml
+# docker-compose.yml
